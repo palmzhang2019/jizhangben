@@ -18,22 +18,22 @@ class BillController extends Controller {
       const list = await ctx.service.bill.list(user_id)
       // 过滤出月份
       const _list = list.filter(item => {
-        if (type_id != 'all') {
-          return moment(Number(item.date)).format('YYYY-MM') == date && type_id == item.type_id
+        if (type_id !== 'all') {
+          return moment(Number(item.date)).format('YYYY-MM') === date && type_id === item.type_id
         }
-        return moment(Number(item.date)).format('YYYY-MM') == date
+        return moment(Number(item.date)).format('YYYY-MM') === date
       })
 
       // 格式化
       let listMap = _list.reduce((curr, item) => {
         const date = moment(Number(item.date)).format('YYYY-MM-DD')
         // 如果能在累加的数组中找到当前项日期的，那么在数组中的加入当前项到 bills 数组。
-        if (curr && curr.length && curr.findIndex(item => item.date == date) > -1) {
-          const index = curr.findIndex(item => item.date == date)
+        if (curr && curr.length && curr.findIndex(item => item.date === date) > -1) {
+          const index = curr.findIndex(item => item.date === date)
           curr[index].bills.push(item)
         }
         // 如果在累加的数组中找不到当前项日期的，那么再新建一项。
-        if (curr && curr.length && curr.findIndex(item => item.date == date) == -1) {
+        if (curr && curr.length && curr.findIndex(item => item.date === date) === -1) {
           curr.push({
             date,
             bills: [item]
@@ -52,23 +52,22 @@ class BillController extends Controller {
       // 分页处理
       const filterListMap = listMap.slice((page - 1) * page_size, page * page_size)
 
-      let __list = list.filter(item => moment(Number(item.date)).format('YYYY-MM') == date)
+      let __list = list.filter(item => moment(Number(item.date)).format('YYYY-MM') === date)
       let totalExpense = __list.reduce((curr, item) => {
-        if (item.pay_type == 1) {
+        if (item.pay_type === 1) {
           curr += Number(item.amount)
           return curr
         }
         return curr
       }, 0)
       let totalIncome = __list.reduce((curr, item) => {
-        if (item.pay_type == 2) {
+        if (item.pay_type === 2) {
           curr += Number(item.amount)
           return curr
         }
         return curr
       }, 0)
 
-      
       ctx.body = {
         code: 200,
         msg: '请求成功',
@@ -87,7 +86,7 @@ class BillController extends Controller {
       }
     }
   }
-  
+
   async add() {
     const { ctx, app } = this;
     const { amount, type_id, type_name, date, pay_type, remark = '' } = ctx.request.body;
@@ -103,7 +102,7 @@ class BillController extends Controller {
     try {
       let user_id
       const token = ctx.request.header.authorization;
-      const decode = await app.jwt.verify(token, app.config.jwt.secret);
+      const decode = app.jwt.verify(token, app.config.jwt.secret);
       if (!decode) return
       user_id = decode.id
       const result = await ctx.service.bill.add({
@@ -135,10 +134,10 @@ class BillController extends Controller {
     // 获取用户 user_id
     let user_id
     const token = ctx.request.header.authorization;
-    const decode = await app.jwt.verify(token, app.config.jwt.secret);
+    const decode = app.jwt.verify(token, app.config.jwt.secret);
     if (!decode) return
     user_id = decode.id
-    
+
     if (!id) {
       ctx.body = {
         code: 500,
@@ -179,7 +178,7 @@ class BillController extends Controller {
     try {
       let user_id
       const token = ctx.request.header.authorization;
-      const decode = await app.jwt.verify(token, app.config.jwt.secret);
+      const decode = app.jwt.verify(token, app.config.jwt.secret);
       if (!decode) return
       user_id = decode.id
       const result = await ctx.service.bill.update({
@@ -248,7 +247,7 @@ class BillController extends Controller {
     const decode = await app.jwt.verify(token, app.config.jwt.secret);
     if (!decode) return
     user_id = decode.id
-    
+
     if (!date) {
       ctx.body = {
         code: 400,
@@ -269,7 +268,7 @@ class BillController extends Controller {
 
       // 总支出
       const total_expense = _data.reduce((arr, cur) => {
-        if (cur.pay_type == 1) {
+        if (cur.pay_type === 1) {
           arr += Number(cur.amount)
         }
         return arr
@@ -277,7 +276,7 @@ class BillController extends Controller {
 
       // 总收入
       const total_income = _data.reduce((arr, cur) => {
-        if (cur.pay_type == 2) {
+        if (cur.pay_type === 2) {
           arr += Number(cur.amount)
         }
         return arr
@@ -285,8 +284,8 @@ class BillController extends Controller {
 
       // 获取收支构成
       let total_data = _data.reduce((arr, cur) => {
-        const index = arr.findIndex(item => item.type_id == cur.type_id)
-        if (index == -1) {
+        const index = arr.findIndex(item => item.type_id === cur.type_id)
+        if (index === -1) {
           arr.push({
             type_id: cur.type_id,
             type_name: cur.type_name,
@@ -334,7 +333,7 @@ class BillController extends Controller {
           total_expense: Number(total_expense).toFixed(2),
           total_income: Number(total_income).toFixed(2),
           total_data: total_data || [],
-          // bar_data: bar_data || [] 
+          // bar_data: bar_data || []
         }
       }
     } catch (error) {
